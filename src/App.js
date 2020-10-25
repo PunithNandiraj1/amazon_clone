@@ -1,25 +1,54 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "./App.css";
-import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
-import Home from "./Components/Home/Home";
 import Header from "./Components/Header/Header";
+import Home from "./Components/Home/Home";
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import Checkout from "./Components/Checkout/Checkout";
-function App() {
-return (
-  <div className="app">
-    <Router>
-      <Header/>
-      <Switch>
-      <Route path="/checkout">
-          <Checkout/>
-        </Route>
-        <Route path="/">
-          <Home/>
-        </Route>
+import Login from "./Components/Login/Login";
+import { auth } from "./firebase";
+import { useStateValue } from "./StateProvider";
 
-      </Switch>
+
+
+function App() {
+  const [{ user }, dispatch] = useStateValue();
+
+  useEffect(() => {
+    auth.onAuthStateChanged((authUser) => {
+      console.log("[USER] ", authUser);
+      if (authUser) {
+        dispatch({
+          type: "SET_USER",
+          user: authUser,
+        });
+      } else {
+        dispatch({
+          type: "SET_USER",
+          user: null,
+        });
+      }
+    });
+  }, []);
+
+  return (
+    <Router>
+      <div className="app">
+        <Switch>
+          <Route path="/login">
+            <Login />
+          </Route>
+          <Route path="/checkout">
+            <Header />
+            <Checkout />
+          </Route>
+          <Route path="/">
+            <Header />
+            <Home />
+          </Route>
+        </Switch>
+      </div>
     </Router>
-  </div>
-);
+  );
 }
+
 export default App;
